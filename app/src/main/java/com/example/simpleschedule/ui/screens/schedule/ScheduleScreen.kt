@@ -482,7 +482,7 @@ fun ScheduleScreen(
                         }) { Text("复制", fontSize = MaterialTheme.typography.labelSmall.fontSize) }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("GitHub：github.com/daodaoq", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Text("开源仓库：github.com/daodaoq/SimpleSchedule", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
                 }
             },
             confirmButton = {
