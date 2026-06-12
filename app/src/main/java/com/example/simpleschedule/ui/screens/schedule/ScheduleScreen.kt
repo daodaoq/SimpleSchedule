@@ -491,9 +491,8 @@ fun ScheduleScreen(
             confirmButton = {
                 TextButton(onClick = {
                     showUpdateDialog = false
-                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(updateInfo.downloadUrl))
-                    context.startActivity(intent)
-                }) { Text("前往下载") }
+                    com.example.simpleschedule.util.ApkInstaller.downloadAndInstall(context, updateInfo.downloadUrl)
+                }) { Text("下载并安装") }
             },
             dismissButton = { TextButton(onClick = { showUpdateDialog = false }) { Text("稍后") } }
         )
