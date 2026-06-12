@@ -15,7 +15,7 @@ object UpdateChecker {
         "https://gitee.com/api/v5/repos/daodaoq/SimpleSchedule/releases/latest"
     private const val GITHUB_API =
         "https://api.github.com/repos/daodaoq/SimpleSchedule/releases/latest"
-    private const val CURRENT_VERSION = "1.2.0"
+    private const val CURRENT_VERSION = "2.0.0"
 
     data class UpdateInfo(
         val hasUpdate: Boolean,
