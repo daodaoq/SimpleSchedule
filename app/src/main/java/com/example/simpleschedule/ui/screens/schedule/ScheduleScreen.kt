@@ -492,7 +492,7 @@ fun ScheduleScreen(
                 TextButton(onClick = {
                     showUpdateDialog = false
                     try {
-                        val url = updateInfo.downloadUrl.ifBlank { "https://github.com/daodaoq/SimpleSchedule/releases/latest" }
+                        val url = updateInfo.downloadUrl.ifBlank { "https://cdn.jsdelivr.net/gh/daodaoq/SimpleSchedule@latest/app-debug.apk" }
                         val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
                             addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                         }
