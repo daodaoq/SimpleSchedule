@@ -14,7 +14,8 @@
       "Bash(pdftotext -layout \"app/宋君奎\\(2025-2026-2\\)课表.pdf\" /tmp/schedule.txt)",
       "Bash(git init *)",
       "Bash(git add *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(git rm *)"
     ]
   }
 }
