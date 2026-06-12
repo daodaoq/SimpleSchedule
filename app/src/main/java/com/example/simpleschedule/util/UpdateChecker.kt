@@ -40,12 +40,9 @@ object UpdateChecker {
             val root = JSONObject(json)
             val tag = root.getString("tag_name").removePrefix("v")
             val assets = root.getJSONArray("assets")
-            // 优先用 jsDelivr CDN（国内访问稳定），兜底用 GitHub 直链
+            // 优先取 Release 附件直链，浏览器打开自动下载
             val downloadUrl = if (assets.length() > 0) {
-                val githubUrl = assets.getJSONObject(0).getString("browser_download_url")
-                // 转换成 jsDelivr CDN：https://cdn.jsdelivr.net/gh/{user}/{repo}@{tag}/{filename}
-                val fileName = assets.getJSONObject(0).getString("name")
-                "https://cdn.jsdelivr.net/gh/daodaoq/SimpleSchedule@$tag/$fileName"
+                assets.getJSONObject(0).getString("browser_download_url")
             } else ""
             val body = root.optString("body", "")
 
