@@ -28,38 +28,39 @@ object UpdateChecker {
         tryGitee() ?: tryGitHub() ?: UpdateInfo(false)
     }
 
-    private fun tryGitee(): UpdateInfo? = try {
-        val json = fetchJson(GITEE_API) ?: return@try null
-        val root = JSONObject(json)
-        val tag = root.getString("tag_name").removePrefix("v")
-        val assets = root.optJSONArray("assets") ?: root.optJSONArray("attach_files")
-        val downloadUrl = assets?.let { arr ->
-            if (arr.length() > 0) arr.getJSONObject(0).optString("browser_download_url", "") else ""
-        } ?: ""
-        val body = root.optString("body", "")
-        if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
-        else UpdateInfo(false)
-    } catch (_: Exception) { null }
+    private fun tryGitee(): UpdateInfo? {
+        return try {
+            val conn = URL(GITEE_API).openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000; conn.readTimeout = 5000
+            if (conn.responseCode != 200) return null
+            val json = conn.inputStream.bufferedReader().readText()
+            val root = JSONObject(json)
+            val tag = root.getString("tag_name").removePrefix("v")
+            val assets = root.optJSONArray("assets") ?: root.optJSONArray("attach_files")
+            val downloadUrl = if (assets != null && assets.length() > 0) {
+                assets.getJSONObject(0).optString("browser_download_url", "")
+            } else ""
+            val body = root.optString("body", "")
+            if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
+            else UpdateInfo(false)
+        } catch (_: Exception) { null }
+    }
 
-    private fun tryGitHub(): UpdateInfo? = try {
-        val conn = URL(GITHUB_API).openConnection() as HttpURLConnection
-        conn.connectTimeout = 5000; conn.readTimeout = 5000
-        conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-        if (conn.responseCode != 200) return@try null
-        val json = conn.inputStream.bufferedReader().readText()
-        val root = JSONObject(json)
-        val tag = root.getString("tag_name").removePrefix("v")
-        val arr = root.getJSONArray("assets")
-        val downloadUrl = if (arr.length() > 0) arr.getJSONObject(0).getString("browser_download_url") else ""
-        val body = root.optString("body", "")
-        if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
-        else UpdateInfo(false)
-    } catch (_: Exception) { null }
-
-    private fun fetchJson(url: String): String? {
-        val conn = URL(url).openConnection() as HttpURLConnection
-        conn.connectTimeout = 5000; conn.readTimeout = 5000
-        return if (conn.responseCode == 200) conn.inputStream.bufferedReader().readText() else null
+    private fun tryGitHub(): UpdateInfo? {
+        return try {
+            val conn = URL(GITHUB_API).openConnection() as HttpURLConnection
+            conn.connectTimeout = 5000; conn.readTimeout = 5000
+            conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
+            if (conn.responseCode != 200) return null
+            val json = conn.inputStream.bufferedReader().readText()
+            val root = JSONObject(json)
+            val tag = root.getString("tag_name").removePrefix("v")
+            val arr = root.getJSONArray("assets")
+            val downloadUrl = if (arr.length() > 0) arr.getJSONObject(0).getString("browser_download_url") else ""
+            val body = root.optString("body", "")
+            if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
+            else UpdateInfo(false)
+        } catch (_: Exception) { null }
     }
 
     private fun compareVersions(v1: String, v2: String): Int {
