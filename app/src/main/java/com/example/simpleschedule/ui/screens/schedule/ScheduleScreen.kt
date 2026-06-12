@@ -492,9 +492,18 @@ fun ScheduleScreen(
                 TextButton(onClick = {
                     showUpdateDialog = false
                     try {
-                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(updateInfo.downloadUrl))
-                        context.startActivity(intent)
-                    } catch (_: Exception) {}
+                        val url = updateInfo.downloadUrl.ifBlank { "https://github.com/daodaoq/SimpleSchedule/releases/latest" }
+                        val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url)).apply {
+                            addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
+                        }
+                        if (intent.resolveActivity(context.packageManager) != null) {
+                            context.startActivity(intent)
+                        } else {
+                            android.widget.Toast.makeText(context, "未找到浏览器", android.widget.Toast.LENGTH_SHORT).show()
+                        }
+                    } catch (e: Exception) {
+                        android.widget.Toast.makeText(context, "打开失败：${e.message}", android.widget.Toast.LENGTH_SHORT).show()
+                    }
                 }) { Text("前往下载") }
             },
             dismissButton = { TextButton(onClick = { showUpdateDialog = false }) { Text("稍后") } }
