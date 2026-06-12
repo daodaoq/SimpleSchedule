@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(./gradlew compileDebugKotlin)",
+      "Bash(node -c app/src/main/java/com/example/simpleschedule/ui/screens/webimport/SdutTableParser.kt)",
+      "Bash(node --check /tmp/parse.js)",
+      "Read(//tmp/**)",
+      "Bash(python3 -c \"from PIL import Image; print\\('PIL OK'\\)\")",
+      "Bash(python -c \"from PIL import Image; print\\('PIL OK'\\)\")",
+      "Bash(pip install *)",
+      "Bash(python *)",
+      "Bash(d:/anaconda/python.exe *)",
+      "Bash(./gradlew assembleDebug)",
+      "Bash(pdftotext -layout \"app/宋君奎\\(2025-2026-2\\)课表.pdf\" /tmp/schedule.txt)",
+      "Bash(git init *)",
+      "Bash(git add *)",
+      "Bash(git commit *)"
+    ]
+  }
+}
