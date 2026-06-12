@@ -482,7 +482,15 @@ fun ScheduleScreen(
                         }) { Text("复制", fontSize = MaterialTheme.typography.labelSmall.fontSize) }
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("开源仓库：github.com/daodaoq/SimpleSchedule", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text("开源仓库：github.com/daodaoq/SimpleSchedule", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.primary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        TextButton(onClick = {
+                            val clip = android.content.ClipData.newPlainText("url", "https://github.com/daodaoq/SimpleSchedule")
+                            (context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager).setPrimaryClip(clip)
+                            android.widget.Toast.makeText(context, "链接已复制", android.widget.Toast.LENGTH_SHORT).show()
+                        }) { Text("复制", fontSize = MaterialTheme.typography.labelSmall.fontSize) }
+                    }
                 }
             },
             confirmButton = {
