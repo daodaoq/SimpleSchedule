@@ -489,27 +489,32 @@ fun ScheduleScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = {
-                    val url = updateInfo.downloadUrl.ifBlank { "https://cdn.jsdelivr.net/gh/daodaoq/SimpleSchedule@latest/app-debug.apk" }
-                    try {
-                        val dm = context.getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
-                        dm.enqueue(android.app.DownloadManager.Request(android.net.Uri.parse(url)).apply {
-                            setTitle("课程通更新")
-                            setDescription("正在下载…")
-                            setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
-                            setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, "课程通.apk")
-                        })
-                        showUpdateDialog = false
-                    } catch (e: Exception) {
-                        showUpdateDialog = false
-                        // 兜底：打开浏览器
+                Column {
+                    TextButton(onClick = {
+                        val url = updateInfo.downloadUrl.ifBlank { "https://cdn.jsdelivr.net/gh/daodaoq/SimpleSchedule@latest/app-debug.apk" }
                         try {
+                            val dm = context.getSystemService(android.content.Context.DOWNLOAD_SERVICE) as android.app.DownloadManager
+                            dm.enqueue(android.app.DownloadManager.Request(android.net.Uri.parse(url)).apply {
+                                setTitle("课程通更新")
+                                setDescription("正在下载…")
+                                setNotificationVisibility(android.app.DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+                                setDestinationInExternalPublicDir(android.os.Environment.DIRECTORY_DOWNLOADS, "课程通.apk")
+                            })
+                        } catch (_: Exception) {}
+                        showUpdateDialog = false
+                    }) {
+                        Text("⬇ 立即下载（推荐）", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                    }
+                    TextButton(onClick = {
+                        showUpdateDialog = false
+                        try {
+                            val url = updateInfo.downloadUrl.ifBlank { "https://cdn.jsdelivr.net/gh/daodaoq/SimpleSchedule@latest/app-debug.apk" }
                             val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(url))
                             intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK)
                             context.startActivity(intent)
                         } catch (_: Exception) {}
-                    }
-                }) { Text("立即下载") }
+                    }) { Text("🌐 浏览器下载") }
+                }
             },
             dismissButton = { TextButton(onClick = { showUpdateDialog = false }) { Text("稍后") } }
         )
