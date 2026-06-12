@@ -43,6 +43,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.material3.Slider
 import androidx.compose.material3.Switch
 import androidx.compose.runtime.mutableFloatStateOf
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -460,6 +461,44 @@ fun ScheduleScreen(
         )
     }
 
+    // ===================== 更新提示 =====================
+    var showUpdateDialog by remember { mutableStateOf(false) }
+    var updateInfo by remember { mutableStateOf(com.example.simpleschedule.util.UpdateChecker.UpdateInfo(false)) }
+
+    // 启动时静默检查更新
+    LaunchedEffect(Unit) {
+        val info = com.example.simpleschedule.util.UpdateChecker.check()
+        if (info.hasUpdate) {
+            updateInfo = info
+            showUpdateDialog = true
+        }
+    }
+
+    if (showUpdateDialog) {
+        AlertDialog(
+            onDismissRequest = { showUpdateDialog = false },
+            title = { Text("发现新版本 🎉") },
+            text = {
+                Column {
+                    Text("最新版本：v${updateInfo.latestVersion}", fontWeight = FontWeight.Bold)
+                    Text("当前版本：v1.0.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    if (updateInfo.releaseNotes.isNotBlank()) {
+                        Spacer(Modifier.height(8.dp))
+                        Text(updateInfo.releaseNotes.take(200), style = MaterialTheme.typography.bodySmall)
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    showUpdateDialog = false
+                    val intent = android.content.Intent(android.content.Intent.ACTION_VIEW, android.net.Uri.parse(updateInfo.downloadUrl))
+                    context.startActivity(intent)
+                }) { Text("前往下载") }
+            },
+            dismissButton = { TextButton(onClick = { showUpdateDialog = false }) { Text("稍后") } }
+        )
+    }
+
     // ===================== 关于 =====================
     if (showAbout) {
         AlertDialog(
@@ -491,7 +530,21 @@ fun ScheduleScreen(
                 }
             },
             confirmButton = {
-                TextButton(onClick = { showAbout = false }) { Text("关闭") }
+                Row(Modifier.fillMaxWidth(), Arrangement.SpaceBetween) {
+                    TextButton(onClick = {
+                        showAbout = false
+                        scope.launch {
+                            val info = com.example.simpleschedule.util.UpdateChecker.check()
+                            if (info.hasUpdate) {
+                                updateInfo = info
+                                showUpdateDialog = true
+                            } else {
+                                android.widget.Toast.makeText(context, "已是最新版本", android.widget.Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }) { Text("检查更新") }
+                    TextButton(onClick = { showAbout = false }) { Text("关闭") }
+                }
             }
         )
     }
