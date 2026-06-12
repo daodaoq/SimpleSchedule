@@ -7,15 +7,15 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * GitHub Releases 更新检查器
- *
- * 通过 GitHub API 查询最新 Release，与当前版本对比。
- * 免费、无需服务器、无需 Google Play。
+ * 更新检查器 — Gitee 优先（国内快），GitHub 兜底
  */
 object UpdateChecker {
 
-    private const val GITHUB_API = "https://api.github.com/repos/daodaoq/SimpleSchedule/releases/latest"
-    private const val CURRENT_VERSION = "1.2.0"  // 与 GitHub Release tag 对比
+    private const val GITEE_API =
+        "https://gitee.com/api/v5/repos/daodaoq/SimpleSchedule/releases/latest"
+    private const val GITHUB_API =
+        "https://api.github.com/repos/daodaoq/SimpleSchedule/releases/latest"
+    private const val CURRENT_VERSION = "1.2.0"
 
     data class UpdateInfo(
         val hasUpdate: Boolean,
@@ -24,43 +24,50 @@ object UpdateChecker {
         val releaseNotes: String = ""
     )
 
-    /**
-     * 检查是否有新版本
-     */
     suspend fun check(): UpdateInfo = withContext(Dispatchers.IO) {
-        try {
-            val conn = URL(GITHUB_API).openConnection() as HttpURLConnection
-            conn.connectTimeout = 5000
-            conn.readTimeout = 5000
-            conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
-
-            if (conn.responseCode != 200) return@withContext UpdateInfo(false)
-
-            val json = conn.inputStream.bufferedReader().readText()
-            val root = JSONObject(json)
-            val tag = root.getString("tag_name").removePrefix("v")
-            val assets = root.getJSONArray("assets")
-            // 优先取 Release 附件直链，浏览器打开自动下载
-            val downloadUrl = if (assets.length() > 0) {
-                assets.getJSONObject(0).getString("browser_download_url")
-            } else ""
-            val body = root.optString("body", "")
-
-            val hasUpdate = compareVersions(tag, CURRENT_VERSION) > 0
-            UpdateInfo(hasUpdate, tag, downloadUrl, body)
-        } catch (e: Exception) {
-            UpdateInfo(false) // 网络异常静默处理
-        }
+        tryGitee() ?: tryGitHub() ?: UpdateInfo(false)
     }
 
-    /** 版本号比较：>0 表示 v1 > v2 */
+    private fun tryGitee(): UpdateInfo? = try {
+        val json = fetchJson(GITEE_API) ?: return@try null
+        val root = JSONObject(json)
+        val tag = root.getString("tag_name").removePrefix("v")
+        val assets = root.optJSONArray("assets") ?: root.optJSONArray("attach_files")
+        val downloadUrl = assets?.let { arr ->
+            if (arr.length() > 0) arr.getJSONObject(0).optString("browser_download_url", "") else ""
+        } ?: ""
+        val body = root.optString("body", "")
+        if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
+        else UpdateInfo(false)
+    } catch (_: Exception) { null }
+
+    private fun tryGitHub(): UpdateInfo? = try {
+        val conn = URL(GITHUB_API).openConnection() as HttpURLConnection
+        conn.connectTimeout = 5000; conn.readTimeout = 5000
+        conn.setRequestProperty("Accept", "application/vnd.github.v3+json")
+        if (conn.responseCode != 200) return@try null
+        val json = conn.inputStream.bufferedReader().readText()
+        val root = JSONObject(json)
+        val tag = root.getString("tag_name").removePrefix("v")
+        val arr = root.getJSONArray("assets")
+        val downloadUrl = if (arr.length() > 0) arr.getJSONObject(0).getString("browser_download_url") else ""
+        val body = root.optString("body", "")
+        if (compareVersions(tag, CURRENT_VERSION) > 0) UpdateInfo(true, tag, downloadUrl, body)
+        else UpdateInfo(false)
+    } catch (_: Exception) { null }
+
+    private fun fetchJson(url: String): String? {
+        val conn = URL(url).openConnection() as HttpURLConnection
+        conn.connectTimeout = 5000; conn.readTimeout = 5000
+        return if (conn.responseCode == 200) conn.inputStream.bufferedReader().readText() else null
+    }
+
     private fun compareVersions(v1: String, v2: String): Int {
-        val parts1 = v1.split(".").map { it.toIntOrNull() ?: 0 }
-        val parts2 = v2.split(".").map { it.toIntOrNull() ?: 0 }
-        for (i in 0 until maxOf(parts1.size, parts2.size)) {
-            val a = parts1.getOrElse(i) { 0 }
-            val b = parts2.getOrElse(i) { 0 }
-            if (a != b) return a - b
+        val p1 = v1.split(".").map { it.toIntOrNull() ?: 0 }
+        val p2 = v2.split(".").map { it.toIntOrNull() ?: 0 }
+        for (i in 0 until maxOf(p1.size, p2.size)) {
+            val d = p1.getOrElse(i) { 0 } - p2.getOrElse(i) { 0 }
+            if (d != 0) return d
         }
         return 0
     }
