@@ -481,7 +481,7 @@ fun ScheduleScreen(
             text = {
                 Column {
                     Text("最新版本：v${updateInfo.latestVersion}", fontWeight = FontWeight.Bold)
-                    Text("当前版本：v1.0.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("当前版本：v1.1.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     if (updateInfo.releaseNotes.isNotBlank()) {
                         Spacer(Modifier.height(8.dp))
                         Text(updateInfo.releaseNotes.take(200), style = MaterialTheme.typography.bodySmall)
@@ -506,7 +506,7 @@ fun ScheduleScreen(
             title = { Text("课程通") },
             text = {
                 Column {
-                    Text("版本 1.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text("版本 1.1.0", style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
                     Spacer(modifier = Modifier.height(8.dp))
                     Text("作者：sjk", style = MaterialTheme.typography.bodyMedium)
                     Spacer(modifier = Modifier.height(4.dp))

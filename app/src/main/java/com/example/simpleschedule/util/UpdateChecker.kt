@@ -15,7 +15,7 @@ import java.net.URL
 object UpdateChecker {
 
     private const val GITHUB_API = "https://api.github.com/repos/daodaoq/SimpleSchedule/releases/latest"
-    private const val CURRENT_VERSION = "1.0.0"  // 与 GitHub Release tag 对比
+    private const val CURRENT_VERSION = "1.1.0"  // 与 GitHub Release tag 对比
 
     data class UpdateInfo(
         val hasUpdate: Boolean,
